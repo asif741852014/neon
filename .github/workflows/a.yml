@@ -1,0 +1,12 @@
+name: Trigger on Check Run Creation
+
+on:
+  check_run:
+    types: [created]
+
+jobs:
+  on-check-run-created:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Check Run Created
+        run: echo "A check run named '${{ github.event.check_run.name }}' was created with status '${{ github.event.check_run.status }}'."
