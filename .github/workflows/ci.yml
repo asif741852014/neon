@@ -1,0 +1,19 @@
+name: check run
+on:
+  push
+permissions:
+  checks: write
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+         curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/check-runs \
+            -d '{
+              "name": "Ping Google",
+              "head_sha": "${{ github.sha }}",
+              "status": "in_progress"
+            }'
