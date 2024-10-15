@@ -1,25 +1,60 @@
-name: Check Run Creator
+name: Ping Google Check Run Example
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 permissions:
   checks: write
+  statuses: write
 
 jobs:
-  create-check-run:
+  ping-check:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Create Check Run
+        id: create_check_run
         run: |
-          curl -X POST \
-            -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+          response=$(curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/check-runs \
             -d '{
               "name": "Ping Google",
               "head_sha": "${{ github.sha }}",
               "status": "in_progress"
+            }')
+          check_run_id=$(echo "$response" | jq -r .id)
+          echo "Check Run ID: $check_run_id"
+          echo "check_run_id=$check_run_id" >> $GITHUB_ENV
+      - name: Ping Google
+        id: ping_google
+        run: |
+          # Attempt to ping and capture the response code
+          response=$(curl --write-out "%{http_code}" --silent --output /dev/null --location google1.com) || response=999
+          
+          if [ "$response" -eq 200 ]; then
+            echo "Ping successful"
+            echo "ping_status=success" >> $GITHUB_ENV
+          else
+            echo "Ping failed with response code $response"
+            echo "ping_status=failure" >> $GITHUB_ENV
+          fi
+
+      - name: Update Check Run
+        run: |
+          conclusion="${{ env.ping_status }}"
+          check_run_id="${{ env.check_run_id }}"
+          curl -X PATCH \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/check-runs/$check_run_id \
+            -d '{
+              "conclusion": "'"${conclusion}"'",
+              "output": {
+                "title": "Ping Result",
+                "summary": "The ping to Google was '"${conclusion}"'."
+              }
             }'
