@@ -1,4 +1,4 @@
-name: check run
+name: Check Run Creator
 on:
   push
 permissions:
