@@ -1,10 +1,8 @@
 name: Trigger on Check Run Created or Completed
 
 on:
-  workflow_run:
-    workflows: ["Check Run Creator"]
-    types:
-      - completed
+  check_run:
+    types: [created, completed]
 
 jobs:
   on-check-run-status-change:
