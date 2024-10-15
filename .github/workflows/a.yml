@@ -2,7 +2,7 @@ name: Trigger on Check Run Created or Completed
 
 on:
   check_run:
-    types: [created, completed]
+    types: [created, rerequested, completed, requested_action]
 
 jobs:
   on-check-run-status-change:
