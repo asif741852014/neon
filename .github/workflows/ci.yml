@@ -32,9 +32,7 @@ jobs:
       - name: Ping Google
         id: ping_google
         run: |
-          # Attempt to ping and capture the response code
-          response=$(curl --write-out "%{http_code}" --silent --output /dev/null --location google1.com) || response=999
-          
+          response=$(curl --write-out "%{http_code}" --silent --output /dev/null --location google.com)
           if [ "$response" -eq 200 ]; then
             echo "Ping successful"
             echo "ping_status=success" >> $GITHUB_ENV
@@ -42,7 +40,6 @@ jobs:
             echo "Ping failed with response code $response"
             echo "ping_status=failure" >> $GITHUB_ENV
           fi
-
       - name: Update Check Run
         run: |
           conclusion="${{ env.ping_status }}"
